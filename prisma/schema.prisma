@@ -1,0 +1,139 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  plan      String   @default("basico")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members   User[]
+  creators  Creator[]
+  campaigns Campaign[]
+  earnings  Earning[]
+
+  @@map("organizations")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("manager")
+  orgId     String
+  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@map("users")
+}
+
+model Creator {
+  id              String   @id @default(cuid())
+  name            String
+  artistName      String?
+  email           String?
+  phone           String?
+  instagram       String?
+  tiktok          String?
+  youtube         String?
+  instagram_followers Int @default(0)
+  tiktok_followers    Int @default(0)
+  youtube_followers   Int @default(0)
+  engagementRate  Float    @default(0)
+  rfc             String?
+  orgId           String
+  org             Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  campaigns CampaignCreator[]
+  earnings  Earning[]
+  contracts Contract[]
+
+  @@map("creators")
+}
+
+model Campaign {
+  id            String   @id @default(cuid())
+  name          String
+  brand         String
+  status        String   @default("pending")
+  budget        Float
+  startDate     DateTime
+  endDate       DateTime
+  description   String?
+  orgId         String
+  org           Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  creators  CampaignCreator[]
+  deliverables Deliverable[]
+  earnings  Earning[]
+
+  @@map("campaigns")
+}
+
+model CampaignCreator {
+  id         String @id @default(cuid())
+  creatorId  String
+  creator    Creator @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  fee        Float
+  status     String @default("pending")
+  createdAt  DateTime @default(now())
+
+  @@unique([creatorId, campaignId])
+  @@map("campaign_creators")
+}
+
+model Deliverable {
+  id         String @id @default(cuid())
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  type       String
+  dueDate    DateTime
+  status     String @default("pending")
+  link       String?
+  createdAt  DateTime @default(now())
+
+  @@map("deliverables")
+}
+
+model Contract {
+  id        String   @id @default(cuid())
+  creatorId String
+  creator   Creator @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  startDate DateTime
+  endDate   DateTime
+  terms     String?
+  createdAt DateTime @default(now())
+
+  @@map("contracts")
+}
+
+model Earning {
+  id         String @id @default(cuid())
+  creatorId  String
+  creator    Creator @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  campaignId String?
+  campaign   Campaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  orgId      String
+  org        Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  amount     Float
+  status     String @default("pending")
+  dueDate    DateTime?
+  paidDate   DateTime?
+  createdAt  DateTime @default(now())
+
+  @@map("earnings")
+}
