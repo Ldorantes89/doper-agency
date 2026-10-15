@@ -1,1 +1,1 @@
-export default function Home() {\n  return (\n    <div style={{ padding: '2rem', textAlign: 'center' }}>\n      <h1>Welcome to Doper Agency</h1>\n      <p>Platform for managing influencers, campaigns, and earnings</p>\n    </div>\n  );\n}
+export default () => <div style={{padding:'2rem',textAlign:'center'}}><h1>Welcome to Doper Agency</h1>h1><p>Platform for managing influencers, campaigns, and earnings</p>p></div>div>;</h1>
